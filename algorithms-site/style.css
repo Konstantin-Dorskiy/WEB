@@ -228,3 +228,103 @@ body > footer a:hover {
     padding: 20px; /* Было 30px, теперь 20px — экономим место */
   }
 }
+/* =======================================================================
+   ПР4: СТИЛИ ДЛЯ ИНТЕРАКТИВНЫХ ЭЛЕМЕНТОВ
+   ======================================================================= */
+
+/* 1. Кнопка переключения темы */
+.theme-btn {
+    background-color: #FF8C1A; /* Оранжевый Scratch */
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition: background 0.3s ease;
+}
+.theme-btn:hover {
+    background-color: #e67e00;
+}
+
+/* 2. Стили для тёмной темы (добавляем класс .dark-theme к body) */
+body.dark-theme {
+    background-color: #1a1a2e;
+    color: #e2e8f0; /* Светлый текст для всей страницы */
+}
+body.dark-theme header {
+    background-color: #161625;
+}
+body.dark-theme article {
+    background-color: #22223b;
+    border-color: #4a4e69;
+}
+body.dark-theme article h3, 
+body.dark-theme section h2, 
+body.dark-theme aside h3 {
+    color: #ffffff; /* Белые заголовки */
+}
+body.dark-theme article p {
+    color: #d1d5db; /* Светло-серый текст в статьях (было тёмно-серым) */
+}
+body.dark-theme article time {
+    color: #9ca3af; /* Более светлый серый для дат */
+}
+body.dark-theme article p:last-child {
+    color: #FF8C1A; /* Оранжевые теги оставляем — они хорошо видны */
+    border-top-color: #4a4e69; /* Пунктирная линия тоже должна быть светлее */
+}
+body.dark-theme aside {
+    background-color: #4a4e69;
+}
+body.dark-theme aside p {
+    color: #e2e8f0; /* Светлый текст в сайдбаре */
+}
+body.dark-theme .theme-btn {
+    background-color: #4a4e69;
+    border: 1px solid #FF8C1A;
+}
+
+/* 3. Кнопка "Читать далее" */
+.read-more-btn {
+    background-color: #7B68EE; /* Фиолетовый Scratch */
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: inherit;
+    margin-bottom: 15px;
+    transition: background 0.3s ease;
+}
+.read-more-btn:hover {
+    background-color: #6a5acd;
+}
+
+/* Свёрнутый текст: показываем только 1 строку */
+.article-text.short {
+    display: -webkit-box;
+    -webkit-line-clamp: 1; /* Ограничиваем 1 строкой */
+    -webkit-box-orient: vertical;
+    overflow: hidden; /* Обрезаем всё, что не влезло */
+}
+
+/* 4. Кнопка лайка */
+.like-btn {
+    background-color: #f0f0f0;
+    color: #333;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: inherit;
+    transition: all 0.3s ease;
+}
+.like-btn:hover {
+    background-color: #ffebee;
+    border-color: #e74c3c;
+}
