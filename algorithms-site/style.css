@@ -328,3 +328,45 @@ body.dark-theme .theme-btn {
     background-color: #ffebee;
     border-color: #e74c3c;
 }
+/* =======================================================================
+   ПР5: СТИЛИ ДЛЯ ЖИВОГО ПОИСКА
+   ======================================================================= */
+
+.search-container { 
+    margin-bottom: 25px; 
+}
+
+#searchInput {
+    width: 100%; /* Растягиваем на всю ширину контейнера */
+    padding: 12px 15px; /* Внутренние отступы для удобства ввода */
+    font-size: 1rem; /* Размер шрифта */
+    border: 1px solid #D8D4FF; /* Светло-фиолетовая рамка (в стиле Scratch) */
+    border-radius: 6px; /* Скруглённые углы */
+    outline: none; /* Убираем стандартную синюю обводку браузера при клике */
+    transition: border-color 0.3s ease; /* Плавное изменение цвета рамки */
+    font-family: inherit; /* Наследуем шрифт от body */
+}
+
+#searchInput:focus {
+    border-color: #FF8C1A; /* При клике рамка становится оранжевой (цвет Scratch) */
+}
+
+/* Стили для поля поиска в тёмной теме */
+body.dark-theme #searchInput {
+    background-color: #22223b;
+    color: white;
+    border-color: #4a4e69;
+}
+
+/* Сообщение, когда ничего не найдено */
+.no-results {
+    text-align: center;
+    color: #7f8c8d;
+    font-size: 1.1rem;
+    padding: 20px;
+    font-style: italic;
+}
+
+body.dark-theme .no-results {
+    color: #9ca3af;
+}
