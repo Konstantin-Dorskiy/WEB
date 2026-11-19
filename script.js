@@ -1,89 +1,10 @@
 /* =======================================================================
-   ПР4: ИНТЕРАКТИВНОСТЬ (ТЕМЫ, ЛАЙКИ, СВЁРТКА ТЕКСТА)
+   ПР7: LOCALSTORAGE И БАЗА ДАННЫХ СТАТЕЙ
    ======================================================================= */
 
-// --- ЗАДАНИЕ 1: ПЕРЕКЛЮЧАТЕЛЬ ТЕМ ---
-const themeButton = document.getElementById('themeBtn');
-
-themeButton.addEventListener('click', function() {
-    // Переключаем класс 'dark-theme' у тега <body> (если есть - уберёт, если нет - добавит)
-    document.body.classList.toggle('dark-theme');
-    
-    // Меняем текст на кнопке в зависимости от текущей темы
-    if (document.body.classList.contains('dark-theme')) {
-        themeButton.textContent = '☀ Светлая тема';
-    } else {
-        themeButton.textContent = '🌙 Тёмная тема';
-    }
-});
-
-
-// --- ЗАДАНИЕ 2: СЧЁТЧИК ЛАЙКОВ (с возможностью убрать лайк) ---
-
-// Находим ВСЕ кнопки лайков на странице
-const likeButtons = document.querySelectorAll('.like-btn');
-
-// Проходимся по каждой кнопке в цикле
-likeButtons.forEach(function(button) {
-    button.addEventListener('click', function() {
-        // Находим счётчик именно внутри ЭТОЙ нажатой кнопки
-        const countSpan = button.querySelector('.like-count');
-        
-        // Превращаем текст "0" в число
-        let currentLikes = parseInt(countSpan.textContent);
-        
-        // Проверяем, лайкнута ли уже эта статья (есть ли класс 'liked')
-        if (button.classList.contains('liked')) {
-            // Если уже лайкнута — УБИРАЕМ лайк
-            currentLikes--; // Уменьшаем счётчик на 1
-            button.classList.remove('liked'); // Убираем класс 'liked'
-            
-            // Возвращаем исходные стили кнопки (серая)
-            button.style.backgroundColor = '#f0f0f0';
-            button.style.color = '#333';
-            button.style.borderColor = '#ddd';
-        } else {
-            // Если не лайкнута — СТАВИМ лайк
-            currentLikes++; // Увеличиваем счётчик на 1
-            button.classList.add('liked'); // Добавляем класс 'liked'
-            
-            // Меняем стили кнопки на красные
-            button.style.backgroundColor = '#e74c3c';
-            button.style.color = 'white';
-            button.style.borderColor = '#e74c3c';
-        }
-        
-        // Записываем новое число обратно в HTML
-        countSpan.textContent = currentLikes;
-    });
-});
-// --- ЗАДАНИЕ 3: СВЁРТКА/РАЗВЁРТКА ТЕКСТА ---
-// Находим ВСЕ кнопки «Читать далее»
-const readMoreButtons = document.querySelectorAll('.read-more-btn');
-
-readMoreButtons.forEach(function(btn) {
-    btn.addEventListener('click', function() {
-        // Находим текст, который идёт ПЕРЕД этой кнопкой (предыдущий соседний элемент)
-        const textBlock = btn.previousElementSibling;
-        
-        // Переключаем класс 'short' (свёрнут ↔ развёрнут)
-        textBlock.classList.toggle('short');
-        
-        // Меняем текст кнопки
-        if (textBlock.classList.contains('short')) {
-            btn.textContent = 'Читать далее';
-        } else {
-            btn.textContent = 'Свернуть';
-        }
-    });
-});
-/* =======================================================================
-   ПР5: ДИНАМИЧЕСКИЙ РЕНДЕРИНГ И ЖИВОЙ ПОИСК
-   ======================================================================= */
-
-// 1. Имитация базы данных статей (Массив объектов)
-// Данные адаптированы под тему "Алгоритмика 5 класс"
-const initialArticles = [
+// Проверяем, есть ли сохранённые статьи в памяти браузера (LocalStorage).
+// Если нет — используем дефолтные статьи (адаптированы под тему "Алгоритмика и Scratch")
+let initialArticles = JSON.parse(localStorage.getItem('myBlogPosts')) || [
     {
         id: 1,
         title: "Что такое алгоритм? Примеры из жизни",
@@ -110,15 +31,39 @@ const initialArticles = [
     }
 ];
 
-// 2. Находим пустой контейнер, куда будем вставлять статьи
+
+/* =======================================================================
+   ПР4: ПЕРЕКЛЮЧАТЕЛЬ ТЕМ
+   ======================================================================= */
+
+const themeButton = document.getElementById('themeBtn');
+
+themeButton.addEventListener('click', function() {
+    // Переключаем класс 'dark-theme' у тега <body>
+    document.body.classList.toggle('dark-theme');
+    
+    // Меняем текст на кнопке в зависимости от текущей темы
+    if (document.body.classList.contains('dark-theme')) {
+        themeButton.textContent = '☀ Светлая тема';
+    } else {
+        themeButton.textContent = '🌙 Тёмная тема';
+    }
+});
+
+
+/* =======================================================================
+   ПР5: ДИНАМИЧЕСКИЙ РЕНДЕРИНГ И ОБРАБОТЧИКИ СОБЫТИЙ (ПР4 + ПР5)
+   ======================================================================= */
+
+// Находим пустой контейнер, куда JavaScript будет вставлять статьи
 const postsContainer = document.getElementById('postsContainer');
 
-// 3. Функция рендеринга (превращает данные в HTML)
+// Функция рендеринга: превращает массив объектов в HTML-карточки
 function renderArticles(articlesArray) {
     // Очищаем контейнер перед каждым рендером, чтобы статьи не дублировались
     postsContainer.innerHTML = '';
     
-    // Если ничего не найдено, выводим сообщение
+    // Если ничего не найдено (например, при поиске), выводим сообщение
     if (articlesArray.length === 0) {
         postsContainer.innerHTML = '<p class="no-results">Ничего не найдено 😢 Попробуйте другой запрос.</p>';
         return; // Прерываем выполнение функции
@@ -126,7 +71,7 @@ function renderArticles(articlesArray) {
     
     // Проходим циклом по каждому объекту в массиве
     articlesArray.forEach(article => {
-        // Создаем HTML-шаблон для карточки статьи (используем обратные кавычки ``)
+        // Создаём HTML-шаблон для карточки статьи (обратные кавычки `` позволяют вставлять переменные через ${})
         const articleHtml = `
             <article>
                 <h3>${article.title}</h3>
@@ -147,14 +92,21 @@ function renderArticles(articlesArray) {
     attachEventHandlers();
 }
 
-// 4. Функция для навешивания обработчиков на динамически созданные элементы
+
+// Функция для навешивания обработчиков на динамически созданные элементы
 function attachEventHandlers() {
-    // Обработчики для кнопок "Читать далее"
+    
+    // --- Обработчики для кнопок "Читать далее" ---
     const readMoreButtons = document.querySelectorAll('.read-more-btn');
     readMoreButtons.forEach(function(btn) {
         btn.addEventListener('click', function() {
+            // Находим текст, который идёт ПЕРЕД этой кнопкой
             const textBlock = btn.previousElementSibling;
+            
+            // Переключаем класс 'short' (свёрнут ↔ развёрнут)
             textBlock.classList.toggle('short');
+            
+            // Меняем текст кнопки в зависимости от состояния
             if (textBlock.classList.contains('short')) {
                 btn.textContent = 'Читать далее';
             } else {
@@ -163,7 +115,7 @@ function attachEventHandlers() {
         });
     });
     
-    // Обработчики для кнопок "Лайк"
+    // --- Обработчики для кнопок "Лайк" (с возможностью убрать лайк) ---
     const likeButtons = document.querySelectorAll('.like-btn');
     likeButtons.forEach(function(button) {
         button.addEventListener('click', function() {
@@ -171,12 +123,14 @@ function attachEventHandlers() {
             let currentLikes = parseInt(countSpan.textContent);
             
             if (button.classList.contains('liked')) {
+                // Убираем лайк
                 currentLikes--;
                 button.classList.remove('liked');
                 button.style.backgroundColor = '#f0f0f0';
                 button.style.color = '#333';
                 button.style.borderColor = '#ddd';
             } else {
+                // Ставим лайк
                 currentLikes++;
                 button.classList.add('liked');
                 button.style.backgroundColor = '#e74c3c';
@@ -189,11 +143,14 @@ function attachEventHandlers() {
     });
 }
 
-// 5. Запускаем первичный рендер при загрузке страницы
+// Запускаем первичный рендер при загрузке страницы
 renderArticles(initialArticles);
 
 
-// 6. Реализация «живого поиска» (поиск по заголовку, тексту и тегам)
+/* =======================================================================
+   ПР5: ЖИВОЙ ПОИСК
+   ======================================================================= */
+
 const searchInput = document.getElementById('searchInput');
 
 searchInput.addEventListener('input', function(event) {
@@ -207,10 +164,73 @@ searchInput.addEventListener('input', function(event) {
         const inText = article.text.toLowerCase().includes(searchText);
         const inTags = article.tags.toLowerCase().includes(searchText);
         
-        // Если текст найден хотя бы в одном из мест — статья проходит фильтр (возвращаем true)
+        // Если текст найден хотя бы в одном из мест — статья проходит фильтр
         return inTitle || inText || inTags;
     });
     
     // Перерисовываем страницу с отфильтрованными статьями
     renderArticles(filteredArticles);
+});
+
+
+/* =======================================================================
+   ПР7: ИНТЕРАКТИВНАЯ ФОРМА ДОБАВЛЕНИЯ СТАТЕЙ И LOCALSTORAGE
+   ======================================================================= */
+
+// 1. Находим форму и её элементы
+const addForm = document.getElementById('addArticleForm');
+const postTitleInput = document.getElementById('postTitle');
+const postTextInput = document.getElementById('postText');
+const postTagsInput = document.getElementById('postTags');
+
+// 2. Слушаем событие отправки формы (submit)
+addForm.addEventListener('submit', function(event) {
+    // ОТМЕНЯЕМ стандартную перезагрузку страницы
+    event.preventDefault();
+    
+    // 3. Собираем данные из полей ввода
+    const titleValue = postTitleInput.value.trim();
+    const textValue = postTextInput.value.trim();
+    // Если теги не введены, ставим дефолтный тег
+    const tagsValue = postTagsInput.value.trim() || "#информатика";
+    
+    // 4. Простая валидация данных (проверка длины)
+    if (titleValue.length < 5) {
+        alert('Ошибка: Заголовок статьи должен быть не короче 5 символов!');
+        return; // Останавливает выполнение, статья не добавится
+    }
+    if (textValue.length < 20) {
+        alert('Ошибка: Описание слишком короткое. Расскажите подробнее (минимум 20 символов)!');
+        return;
+    }
+    
+    // 5. Формируем дату для новой статьи (сегодняшний день)
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+    const isoDate = today.toISOString().split('T')[0]; // Формат YYYY-MM-DD
+    
+    // 6. Создаем новый объект статьи (используем Date.now() для уникального ID)
+    const newArticle = {
+        id: Date.now(),
+        title: titleValue,
+        date: formattedDate,
+        isoDate: isoDate,
+        text: textValue,
+        tags: tagsValue
+    };
+    
+    // 7. ДОБАВЛЯЕМ СТАТЬЮ В НАЧАЛО МАССИВА
+    initialArticles.unshift(newArticle);
+    
+    // 8. СОХРАНЯЕМ обновленный массив в LocalStorage браузера (превращаем в строку JSON)
+    localStorage.setItem('myBlogPosts', JSON.stringify(initialArticles));
+    
+    // 9. ОБНОВЛЯЕМ ИНТЕРФЕЙС (перерисовываем список статей)
+    renderArticles(initialArticles);
+    
+    // 10. Очищаем поля формы для следующей записи
+    addForm.reset();
+    
+    // Плавная прокрутка к новой статье
+    document.getElementById('postsContainer').scrollIntoView({ behavior: 'smooth' });
 });
