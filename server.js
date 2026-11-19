@@ -94,7 +94,49 @@ app.post('/api/articles', (req, res) => {
     });
 });
 
-// 4. Запуск сервера
+// 4. API: Получить ОДНУ статью по ID (динамический параметр URL)
+app.get('/api/articles/:id', (req, res) => {
+    const postId = Number(req.params.id);
+
+    db.get("SELECT * FROM articles WHERE id = ?", [postId], (err, post) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        if (!post) {
+            res.status(404).json({ error: 'Статья с таким ID не найдена' });
+            return;
+        }
+        res.json(post);
+    });
+});
+
+// 5. API: Удалить статью по ID (HTTP-метод DELETE) - ЗАДАНИЕ 4.3
+app.delete('/api/articles/:id', (req, res) => {
+    const postId = Number(req.params.id);
+    
+    const sql = "DELETE FROM articles WHERE id = ?";
+    // Важно использовать function(err), а не стрелочную функцию, чтобы работал this.changes
+    db.run(sql, [postId], function(err) {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        
+        // this.changes показывает, сколько строк было реально удалено (0 или 1)
+        if (this.changes === 0) {
+            res.status(404).json({ error: 'Статья с таким ID не найдена' });
+            return;
+        }
+        
+        res.status(200).json({ 
+            message: 'Статья успешно удалена', 
+            deletedId: postId 
+        });
+    });
+});
+
+// 6. Запуск сервера
 app.listen(PORT, () => {
     console.log(`🚀 Сервер успешно запущен!`);
     console.log(`🌐 Сайт: http://localhost:${PORT}`);
